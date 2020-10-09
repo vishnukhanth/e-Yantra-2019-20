@@ -44,6 +44,33 @@ def process(ip_image):
     ###########################
     cv2.imshow("window", sector_image)
     cv2.waitKey(0);
+    cv2.destroyAllWindows()
+
+    # converting the input image to hsv format
+    hsv = cv2.cvtColor(ip_image, cv2.COLOR_BGR2HSV)
+    # defining hsv range for white
+    white_low = np.array([0,0,255])
+    white_high = np.array([10,255,255])
+
+    white_mask = cv2.inRange(hsv, white_low, white_high)
+    # finding contours in white_mask
+    contours, hierarchy = cv2.findContours(white_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+
+    # finding area of each contour and sorting it out
+    a = []
+    for i in contours:
+        area = cv2.contourArea(i)
+        a.append(area)
+    b = a.copy()
+    b.sort()
+    # finding the index of contour whose area is second minimum among other contours
+    for i in range(len(b)):
+        if a[i] == b[1] :
+            sector_no = i
+
+    # drawing missing sector on sector image
+    cv2.drawContours(sector_image, contours, sector_no,(0,0,0) ,-1)
+    
     return sector_image
 
 
@@ -72,7 +99,7 @@ def main():
         ## passing read in image to process function
         sector_image = process(ip_image)
         ## saving the output in  an image of said name in the Generated folder
-        cv2.imwrite(generated_folder_path+"/"+"image_"+str(i)+"_fill_in.png", sector_image)
+        cv2.imwrite(generated_folder_path+"/"+image_name[0:len(image_name)-4]+"_fill_in.png", sector_image)
         i+=1
 
 
