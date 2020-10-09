@@ -41,6 +41,47 @@ def process(ip_image):
     ###########################
     cv2.imshow("window", ip_image)
     cv2.waitKey(0);
+    cv2.destroyAllWindows()
+
+    hsv = cv2.cvtColor(ip_image,cv2.COLOR_BGR2HSV)
+    # upper and lower hsv values for green and red
+    green_low = np.array([50,100,100])
+    green_high = np.array([70,255,255])
+    red_low = np.array([0,255,255])
+    red_high = np.array([10,255,255])
+    
+    gray = cv2.cvtColor(ip_image, cv2.COLOR_BGR2GRAY)
+    # mask for green and red
+    mask1 = cv2.inRange(hsv, green_low, green_high)
+    mask2 = cv2.inRange(hsv, red_low, red_high)
+
+    # calculating moments for mask1
+    moment1 = cv2.moments(mask1)
+    x1 = int(moment1["m10"] / moment1["m00"])
+    y1 = int(moment1["m01"] / moment1["m00"])
+
+    # calculating moments for mask2
+    moment3 = cv2.moments(mask2)
+    x3 = int(moment3["m10"] / moment3["m00"])
+    y3 = int(moment3["m01"] / moment3["m00"])
+
+    # finding center
+    ret,thresh = cv2.threshold(gray, 127,255, 0)
+    moment2 = cv2.moments(thresh)
+    x2 = int(moment2["m10"] / moment2["m00"])
+    y2 = int(moment2["m01"] / moment2["m00"])
+
+    # finding angle
+    coordinate1 = np.array([x1,y1])
+    coordinate2 = np.array([x2,y2])
+    coordinate3 = np.array([x3,y3])
+    vector1 = coordinate1 - coordinate2
+    vector2 = coordinate3 - coordinate2
+    cosine_angle = np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
+    angle = np.arccos(cosine_angle)
+    angle = np.degrees(angle)
+    angle = round(float(angle), 2)
+    
     return angle
 
 
